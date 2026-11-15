@@ -1,0 +1,310 @@
+{
+  "entities": {
+    "Lead": {
+      "title": "Lead",
+      "description": "An appointment or callback enquiry submitted through the validated backend API and stored in Firestore.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["appointment", "callback"],
+          "description": "Type of enquiry submitted by the visitor."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$",
+          "description": "Visitor full name."
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 16,
+          "pattern": "^(\\+91)?[6-9][0-9]{9}$",
+          "description": "Normalized 10-digit Indian mobile number."
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 120,
+          "format": "email",
+          "description": "Optional visitor email address."
+        },
+        "patientUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]*$",
+          "description": "Optional Firebase Auth UID if booked while signed in to the Patient Portal."
+        },
+        "patientType": {
+          "type": "string",
+          "enum": ["adult", "child", "family"],
+          "description": "Who the dental visit is for."
+        },
+        "service": {
+          "type": "string",
+          "enum": [
+            "Teeth whitening",
+            "Smile makeovers",
+            "Bite correction",
+            "Child dental check-ups",
+            "Root canal treatment",
+            "Toothache relief",
+            "Dental sealants",
+            "General family check-up"
+          ],
+          "description": "Selected dental service."
+        },
+        "preferredDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Preferred visit date in YYYY-MM-DD format."
+        },
+        "preferredTimeSlot": {
+          "type": "string",
+          "enum": ["morning", "afternoon", "evening"],
+          "description": "Preferred time slot for the appointment."
+        },
+        "bestTimeToCall": {
+          "type": "string",
+          "enum": ["morning", "afternoon", "evening", "anytime"],
+          "description": "Best time to call back for callback enquiries."
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^[^<>]*$",
+          "description": "Optional visitor note (max 500 characters)."
+        },
+        "consentGiven": {
+          "type": "boolean",
+          "description": "Explicit DPDP Act consent checkbox confirmation."
+        },
+        "consentTimestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp when consent was given."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["new", "contacted", "booked", "closed"],
+          "description": "Lead workflow status managed by the clinic owner."
+        },
+        "ownerNotes": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^[^<>]*$",
+          "description": "Private reception notes added by the clinic owner."
+        },
+        "emailNotified": {
+          "type": "boolean",
+          "description": "Whether the owner notification email succeeded."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the lead was created."
+        },
+        "ipHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Salted SHA-256 hash of the visitor IP address."
+        }
+      },
+      "required": [
+        "type",
+        "name",
+        "phone",
+        "patientType",
+        "service",
+        "preferredDate",
+        "preferredTimeSlot",
+        "bestTimeToCall",
+        "consentGiven",
+        "consentTimestamp",
+        "status",
+        "ownerNotes",
+        "emailNotified",
+        "createdAt",
+        "ipHash"
+      ]
+    },
+    "PatientRecord": {
+      "title": "PatientRecord",
+      "description": "A dental visit summary and oral health history entry accessible only to the authenticated patient and clinic owner.",
+      "type": "object",
+      "properties": {
+        "patientUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the patient."
+        },
+        "patientName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$",
+          "description": "Name of the patient or family member treated."
+        },
+        "visitDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Date of the clinical visit."
+        },
+        "service": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$",
+          "description": "Treatment or check-up performed."
+        },
+        "dentistName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$",
+          "description": "Attending dentist name."
+        },
+        "toothArea": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$",
+          "description": "Area or teeth examined/treated."
+        },
+        "clinicalSummary": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 500,
+          "pattern": "^[^<>]*$",
+          "description": "Plain-language summary of findings and care completed."
+        },
+        "homeCareAdvice": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 500,
+          "pattern": "^[^<>]*$",
+          "description": "Follow-up brushing, fluoride, or diet instructions."
+        },
+        "nextCheckupDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Recommended next check-up date."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Record creation timestamp."
+        }
+      },
+      "required": [
+        "patientUid",
+        "patientName",
+        "visitDate",
+        "service",
+        "dentistName",
+        "toothArea",
+        "clinicalSummary",
+        "homeCareAdvice",
+        "nextCheckupDate",
+        "createdAt"
+      ]
+    },
+    "PatientProfile": {
+      "title": "PatientProfile",
+      "description": "Patient chairside comfort preferences and self-reported oral health summary.",
+      "type": "object",
+      "properties": {
+        "patientUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the patient."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$",
+          "description": "Patient display name."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 16,
+          "pattern": "^[^<>]*$",
+          "description": "Preferred contact phone number."
+        },
+        "comfortPreference": {
+          "type": "string",
+          "maxLength": 250,
+          "pattern": "^[^<>]*$",
+          "description": "Chairside anxiety/comfort preferences (e.g. numbing gel first, hand-raise signal)."
+        },
+        "sensitivityOrAllergyNote": {
+          "type": "string",
+          "maxLength": 300,
+          "pattern": "^[^<>]*$",
+          "description": "Known tooth sensitivities or medication allergies to note."
+        },
+        "familyMembersNote": {
+          "type": "string",
+          "maxLength": 250,
+          "pattern": "^[^<>]*$",
+          "description": "Children or family members linked to this household."
+        },
+        "lastCheckupDate": {
+          "type": "string",
+          "maxLength": 20,
+          "pattern": "^[^<>]*$",
+          "description": "Approximate date of last dental check-up."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last updated ISO timestamp."
+        }
+      },
+      "required": [
+        "patientUid",
+        "displayName",
+        "phone",
+        "comfortPreference",
+        "sensitivityOrAllergyNote",
+        "familyMembersNote",
+        "lastCheckupDate",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/leads/{leadId}": {
+      "schema": {
+        "$ref": "#/entities/Lead"
+      },
+      "description": "Stores patient appointment and callback leads. Readable by the verified clinic owner or by the authenticated patient whose patientUid matches."
+    },
+    "/patientRecords/{recordId}": {
+      "schema": {
+        "$ref": "#/entities/PatientRecord"
+      },
+      "description": "Stores patient dental visit history and post-care instructions, strictly isolated by patientUid."
+    },
+    "/patientProfiles/{userId}": {
+      "schema": {
+        "$ref": "#/entities/PatientProfile"
+      },
+      "description": "Stores a patient's personal chairside comfort preferences and oral health notes, strictly isolated to userId == request.auth.uid."
+    }
+  }
+}

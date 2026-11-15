@@ -1,0 +1,238 @@
+@import "tailwindcss";
+
+:root {
+  /* Color Palette — Fresh teal + coral */
+  --color-white: #FFFFFF;
+  --color-mint-mist: #E6F4F1;
+  --color-clinic-teal: #0E7C86;
+  --color-deep-navy: #0B2B3A;
+  --color-warm-coral: #FF7A59;
+
+  /* Font Families */
+  --font-heading: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Nunito Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--color-white);
+    color: var(--color-deep-navy);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  @media (min-width: 640px) {
+    html {
+      font-size: 17px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 18px;
+    }
+  }
+
+  body {
+    background-color: var(--color-white);
+    color: var(--color-deep-navy);
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  /* Headings in sentence case, Nunito 700 and 800, fluidly scaled for mobile, tablet & PC */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--color-deep-navy);
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: clamp(24px, 3.8vw, 38px);
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: clamp(20px, 2.5vw, 24px);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  p, li {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-deep-navy);
+    overflow-wrap: break-word;
+  }
+
+  @media (min-width: 640px) {
+    p, li {
+      font-size: 17px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    p, li {
+      font-size: 18px;
+    }
+  }
+
+  /* Accessible 2px Clinic teal focus ring with offset */
+  *:focus-visible {
+    outline: 2px solid var(--color-clinic-teal) !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@layer components {
+  /* Highlighted word inside large headings: Nunito 800 Italic in Clinic teal */
+  .heading-highlight {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-style: italic;
+    color: var(--color-clinic-teal);
+  }
+
+  /* Button rules from style guide — inside @layer components so Tailwind utilities like hidden sm:inline-flex work properly */
+  .btn-coral {
+    background-color: var(--color-warm-coral);
+    color: var(--color-deep-navy);
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    min-height: 48px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    max-width: 100%;
+  }
+
+  .btn-coral:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .btn-coral:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn-coral:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  .btn-teal {
+    background-color: var(--color-clinic-teal);
+    color: var(--color-white);
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    min-height: 48px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    transition: transform 0.18s ease-out, opacity 0.18s ease-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    max-width: 100%;
+  }
+
+  .btn-teal:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  .btn-teal-outline {
+    background-color: var(--color-white);
+    color: var(--color-clinic-teal);
+    border: 2px solid var(--color-clinic-teal);
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    min-height: 48px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    transition: transform 0.18s ease-out, background-color 0.18s ease-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    max-width: 100%;
+  }
+
+  .btn-teal-outline:hover:not(:disabled) {
+    background-color: var(--color-mint-mist);
+    transform: translateY(-2px);
+  }
+
+  .caption-text {
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--color-deep-navy);
+  }
+}
+
+/* Scrollbar utilities for mobile horizontal scroll-snap */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Respect prefers-reduced-motion by turning all animations and transitions off */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

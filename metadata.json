@@ -1,0 +1,6 @@
+{
+  "name": "Sunnybrook Family & Kids Dental",
+  "description": "Warm, gentle dental care for children, adults, and whole families. Book a visit or request a callback quickly.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

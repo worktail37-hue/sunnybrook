@@ -1,0 +1,214 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net: Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser()
+        && (
+          request.auth.token.email == 'worktail37@gmail.com'
+          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    // 3. Lead Entity Validation Blueprint (Synced with firebase-blueprint.json)
+    function isValidLead(data) {
+      return data.keys().hasAll([
+          'type', 'name', 'phone', 'email', 'patientType', 'service',
+          'preferredDate', 'preferredTimeSlot', 'bestTimeToCall', 'message',
+          'consentGiven', 'consentTimestamp', 'status', 'ownerNotes',
+          'emailNotified', 'createdAt', 'ipHash'
+        ])
+        && data.keys().hasOnly([
+          'type', 'name', 'phone', 'email', 'patientUid', 'patientType', 'service',
+          'preferredDate', 'preferredTimeSlot', 'bestTimeToCall', 'message',
+          'consentGiven', 'consentTimestamp', 'status', 'ownerNotes',
+          'emailNotified', 'createdAt', 'ipHash'
+        ])
+        && data.type is string && data.type.size() <= 20 && data.type in ['appointment', 'callback']
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 80 && data.name.matches('^[^<>]*$')
+        && data.phone is string && data.phone.size() >= 10 && data.phone.size() <= 16 && data.phone.matches('^(\\+91)?[6-9][0-9]{9}$')
+        && data.email is string && data.email.size() <= 120 && data.email.matches('^[^<>]*$')
+        && (!('patientUid' in data) || (data.patientUid is string && data.patientUid.size() <= 128 && data.patientUid.matches('^[a-zA-Z0-9_\\-]*$')))
+        && data.patientType is string && data.patientType.size() <= 16 && data.patientType in ['adult', 'child', 'family']
+        && data['service'] is string && data['service'].size() <= 60 && data['service'] in [
+          'Teeth whitening',
+          'Smile makeovers',
+          'Bite correction',
+          'Child dental check-ups',
+          'Root canal treatment',
+          'Toothache relief',
+          'Dental sealants',
+          'General family check-up'
+        ]
+        && data.preferredDate is string && data.preferredDate.size() == 10 && data.preferredDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.preferredTimeSlot is string && data.preferredTimeSlot.size() <= 16 && data.preferredTimeSlot in ['morning', 'afternoon', 'evening']
+        && data.bestTimeToCall is string && data.bestTimeToCall.size() <= 16 && data.bestTimeToCall in ['morning', 'afternoon', 'evening', 'anytime']
+        && data.message is string && data.message.size() <= 500 && data.message.matches('^[^<>]*$')
+        && data.consentGiven is bool && data.consentGiven == true
+        && data.consentTimestamp is string && data.consentTimestamp.size() >= 10 && data.consentTimestamp.size() <= 40
+        && data.status is string && data.status.size() <= 16 && data.status in ['new', 'contacted', 'booked', 'closed']
+        && data.ownerNotes is string && data.ownerNotes.size() <= 500 && data.ownerNotes.matches('^[^<>]*$')
+        && data.emailNotified is bool
+        && data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40
+        && data.ipHash is string && data.ipHash.size() == 64 && data.ipHash.matches('^[a-f0-9]{64}$');
+    }
+
+    // 4. PatientRecord Validation Blueprint (Synced with firebase-blueprint.json)
+    function isValidPatientRecord(data) {
+      return data.keys().hasAll([
+          'patientUid', 'patientName', 'visitDate', 'service', 'dentistName',
+          'toothArea', 'clinicalSummary', 'homeCareAdvice', 'nextCheckupDate', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'patientUid', 'patientName', 'visitDate', 'service', 'dentistName',
+          'toothArea', 'clinicalSummary', 'homeCareAdvice', 'nextCheckupDate', 'createdAt'
+        ])
+        && data.patientUid is string && data.patientUid.size() >= 1 && data.patientUid.size() <= 128 && data.patientUid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.patientName is string && data.patientName.size() >= 2 && data.patientName.size() <= 80 && data.patientName.matches('^[^<>]*$')
+        && data.visitDate is string && data.visitDate.size() == 10 && data.visitDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data['service'] is string && data['service'].size() >= 2 && data['service'].size() <= 80 && data['service'].matches('^[^<>]*$')
+        && data.dentistName is string && data.dentistName.size() >= 2 && data.dentistName.size() <= 80 && data.dentistName.matches('^[^<>]*$')
+        && data.toothArea is string && data.toothArea.size() >= 2 && data.toothArea.size() <= 80 && data.toothArea.matches('^[^<>]*$')
+        && data.clinicalSummary is string && data.clinicalSummary.size() >= 2 && data.clinicalSummary.size() <= 500 && data.clinicalSummary.matches('^[^<>]*$')
+        && data.homeCareAdvice is string && data.homeCareAdvice.size() >= 2 && data.homeCareAdvice.size() <= 500 && data.homeCareAdvice.matches('^[^<>]*$')
+        && data.nextCheckupDate is string && data.nextCheckupDate.size() == 10 && data.nextCheckupDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.createdAt is string && data.createdAt.size() >= 10 && data.createdAt.size() <= 40;
+    }
+
+    // 5. PatientProfile Validation Blueprint (Synced with firebase-blueprint.json)
+    function isValidPatientProfile(data) {
+      return data.keys().hasAll([
+          'patientUid', 'displayName', 'phone', 'comfortPreference',
+          'sensitivityOrAllergyNote', 'familyMembersNote', 'lastCheckupDate', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'patientUid', 'displayName', 'phone', 'comfortPreference',
+          'sensitivityOrAllergyNote', 'familyMembersNote', 'lastCheckupDate', 'updatedAt'
+        ])
+        && data.patientUid is string && data.patientUid.size() >= 1 && data.patientUid.size() <= 128 && data.patientUid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 && data.displayName.matches('^[^<>]*$')
+        && data.phone is string && data.phone.size() <= 16 && data.phone.matches('^[^<>]*$')
+        && data.comfortPreference is string && data.comfortPreference.size() <= 250 && data.comfortPreference.matches('^[^<>]*$')
+        && data.sensitivityOrAllergyNote is string && data.sensitivityOrAllergyNote.size() <= 300 && data.sensitivityOrAllergyNote.matches('^[^<>]*$')
+        && data.familyMembersNote is string && data.familyMembersNote.size() <= 250 && data.familyMembersNote.matches('^[^<>]*$')
+        && data.lastCheckupDate is string && data.lastCheckupDate.size() <= 20 && data.lastCheckupDate.matches('^[^<>]*$')
+        && data.updatedAt is string && data.updatedAt.size() >= 10 && data.updatedAt.size() <= 40;
+    }
+
+    // 6. Leads Collection Rules
+    match /leads/{leadId} {
+      allow create: if isValidId(leadId)
+        && isValidLead(incoming())
+        && incoming().status == 'new'
+        && incoming().ownerNotes == '';
+
+      // Read access restricted to verified clinic owner OR verified patient who owns this appointment
+      allow get: if isVerifiedUser()
+        && isValidId(leadId)
+        && (isAdmin() || ('patientUid' in resource.data && resource.data.patientUid == request.auth.uid));
+
+      allow list: if isVerifiedUser()
+        && (isAdmin() || ('patientUid' in resource.data && resource.data.patientUid == request.auth.uid));
+
+      // Update access strictly restricted to verified clinic owner
+      allow update: if isSignedIn()
+        && isValidId(leadId)
+        && isValidLead(incoming())
+        && isAdmin()
+        && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'ownerNotes'])
+        && incoming().createdAt == existing().createdAt
+        && incoming().phone == existing().phone
+        && incoming().type == existing().type;
+
+      allow delete: if isAdmin() && isValidId(leadId);
+    }
+
+    // 7. PatientRecords Collection Rules (PII-isolated per patientUid)
+    match /patientRecords/{recordId} {
+      allow get: if isVerifiedUser()
+        && isValidId(recordId)
+        && (resource.data.patientUid == request.auth.uid || isAdmin());
+
+      allow list: if isVerifiedUser()
+        && (resource.data.patientUid == request.auth.uid || isAdmin());
+
+      allow create: if isVerifiedUser()
+        && isValidId(recordId)
+        && isValidPatientRecord(incoming())
+        && (incoming().patientUid == request.auth.uid || isAdmin());
+
+      allow update: if isVerifiedUser()
+        && isValidId(recordId)
+        && isValidPatientRecord(incoming())
+        && (existing().patientUid == request.auth.uid || isAdmin())
+        && incoming().patientUid == existing().patientUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly(['clinicalSummary', 'homeCareAdvice', 'nextCheckupDate']);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(recordId)
+        && (resource.data.patientUid == request.auth.uid || isAdmin());
+    }
+
+    // 8. PatientProfiles Collection Rules (PII-isolated per userId)
+    match /patientProfiles/{userId} {
+      allow get: if isVerifiedUser()
+        && isValidId(userId)
+        && (request.auth.uid == userId || isAdmin());
+
+      allow list: if isAdmin() && resource.data.patientUid is string;
+
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidPatientProfile(incoming())
+        && incoming().patientUid == request.auth.uid;
+
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && (request.auth.uid == userId || isAdmin())
+        && isValidPatientProfile(incoming())
+        && incoming().patientUid == existing().patientUid
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'phone', 'comfortPreference',
+          'sensitivityOrAllergyNote', 'familyMembersNote', 'lastCheckupDate', 'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(userId)
+        && (request.auth.uid == userId || isAdmin());
+    }
+
+    // 9. Admins Collection Rules
+    match /admins/{adminUid} {
+      allow get: if isSignedIn() && isValidId(adminUid) && request.auth.uid == adminUid;
+      allow list, create, update, delete: if false;
+    }
+  }
+}
