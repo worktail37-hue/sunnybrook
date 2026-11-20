@@ -73,7 +73,7 @@ export const DIRTY_DOZEN_TESTS: DirtyDozenTestCase[] = [
     name: 'Unverified Email Spoof',
     operation: 'get',
     path: '/leads/lead_123',
-    auth: { uid: 'spoof_1', email: 'worktail37@gmail.com', email_verified: false },
+    auth: { uid: 'spoof_1', email: 'owner@example.com', email_verified: false },
     expectedResult: 'PERMISSION_DENIED',
   },
   {

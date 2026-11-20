@@ -250,7 +250,7 @@ async function notifyOwnerByEmail(lead: {
   const ownerEmail =
     configuredOwner && configuredOwner !== 'owner@example.com'
       ? configuredOwner
-      : 'worktail37@gmail.com';
+      : '';
   const apiKey = process.env.EMAIL_API_KEY?.trim();
 
   if (!ownerEmail || !apiKey || apiKey === 'YOUR_RESEND_OR_SENDGRID_API_KEY') {
@@ -398,7 +398,7 @@ async function requireOwnerAuth(req: Request, res: Response, next: NextFunction)
 
   const idToken = authHeader.slice('Bearer '.length).trim();
   const envOwner = process.env.OWNER_EMAIL?.trim().toLowerCase();
-  const allowedOwnerEmails = new Set<string>(['worktail37@gmail.com']);
+  const allowedOwnerEmails = new Set<string>();
   if (envOwner && envOwner !== 'owner@example.com') {
     allowedOwnerEmails.add(envOwner);
   }
